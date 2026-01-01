@@ -11,7 +11,7 @@ A modern React component library built with Vite, TypeScript, and best practices
 - 🎨 **Theme Provider**: Dark/light mode with system preference support
 - 🌐 **API Service**: Axios-based service for data fetching and posting
 - 🔄 **React Query Integration**: Built-in query client and provider
-- � **RBAC System**: Role-based access control with customizable permissions
+- 🔐 **RBAC System**: Fully configurable role-based access control - bring your own roles and resources
 - 🎣 **Custom Hooks**: Utility hooks like useIsMobile, useRouter, usePathname
 - 🛠️ **Utility Functions**: Helper functions for common tasks (cn, debounce, throttle, etc.)
 - 💾 **Cache Utilities**: React Query cache manipulation helpers
@@ -559,25 +559,63 @@ export function UsersPage() {
 
 ### Role-Based Access Control (RBAC)
 
+The RBAC system is now fully configurable! Define your own roles, resources, and rules.
+
 ```tsx
 import { 
+  RBACProvider,
   useAccessControl, 
   AccessControlWrapper, 
   withAccessControl,
-  Action, 
-  Resource 
+  CommonActions,
+  RBACConfig 
 } from 'izen-react-starter';
 
-// Using the hook
+// 1. Define your RBAC configuration
+const rbacConfig: RBACConfig = {
+  roles: ['admin', 'editor', 'viewer'],
+  resources: ['posts', 'comments', 'users'],
+  rules: {
+    admin: {
+      [CommonActions.Manage]: { can: 'all' },
+      [CommonActions.Create]: { can: 'all' },
+      [CommonActions.Read]: { can: 'all' },
+      [CommonActions.Update]: { can: 'all' },
+      [CommonActions.Delete]: { can: 'all' },
+    },
+    editor: {
+      [CommonActions.Create]: { can: ['posts', 'comments'] },
+      [CommonActions.Read]: { can: 'all' },
+      [CommonActions.Update]: { can: ['posts', 'comments'] },
+      [CommonActions.Delete]: { can: ['comments'] },
+    },
+    viewer: {
+      [CommonActions.Read]: { can: 'all' },
+    },
+  },
+};
+
+// 2. Wrap your app with RBACProvider
+function App() {
+  return (
+    <AuthProvider>
+      <RBACProvider config={rbacConfig}>
+        <YourApp />
+      </RBACProvider>
+    </AuthProvider>
+  );
+}
+
+// 3. Use access control in your components
 function AdminPanel() {
   const { isAllowed } = useAccessControl();
   
   return (
     <div>
-      {isAllowed(Action.Create, Resource.Users) && (
+      {isAllowed('create', 'users') && (
         <button>Create User</button>
       )}
-      {isAllowed(Action.Delete, Resource.Users) && (
+      {isAllowed('delete', 'users') && (
         <button>Delete User</button>
       )}
     </div>
@@ -587,8 +625,8 @@ function AdminPanel() {
 // Using the wrapper component
 function Dashboard() {
   return (
-    <AccessControlWrapper resource={Resource.Reports} action={Action.Read}>
-      <ReportsPanel />
+    <AccessControlWrapper resource="posts" action="create">
+      <CreatePostButton />
     </AccessControlWrapper>
   );
 }
@@ -597,10 +635,13 @@ function Dashboard() {
 const ProtectedComponent = withAccessControl(MyComponent);
 
 <ProtectedComponent 
-  accessedResource={Resource.Users} 
-  accessAction={Action.Update}
+  accessedResource="users" 
+  accessAction="update"
   otherProp="value" 
 />
+```
+
+> 📖 **See [RBAC.md](./RBAC.md) for comprehensive documentation** including custom actions, multiple roles, migration guide, and advanced examples.
 ```
 
 ### Utility Functions

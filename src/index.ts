@@ -89,22 +89,30 @@ export type { CacheEditOptions } from './lib';
 
 // Export RBAC
 export {
-  Action,
-  Resource,
-  Role,
-  RolesNames,
-  rules,
+  CommonActions,
   userCan,
   useAccessControl,
   AccessControlWrapper,
   withAccessControl,
-  UpdateAccessControlWrapper
+  UpdateAccessControlWrapper,
+  RBACProvider,
+  useRBAC
 } from './rbac';
 export type {
+  Action,
+  Resource,
+  Role,
+  RoleLabel,
+  Rule,
+  RoleRules,
+  Rules,
+  RBACConfig,
   UseAccessControlReturn,
   AccessControlWrapperProps,
   WithAccessControlProps,
-  UpdateAccessControlWrapperProps
+  UpdateAccessControlWrapperProps,
+  RBACProviderProps,
+  RBACContextType
 } from './rbac';
 
 // Export providers

@@ -1,13 +1,25 @@
 import React, { ReactElement } from 'react';
 import useAccessControl from './useAccessControl';
-import { Action, Resource } from './access-rules';
 
 export interface UpdateAccessControlWrapperProps {
   children: ReactElement;
-  resource: Resource;
+  resource: string;
   fallback?: ReactElement | null;
 }
 
+/**
+ * Component to conditionally render children based on update permissions
+ * 
+ * @param resource - The resource to check update access for
+ * @param fallback - Component to render if access is denied
+ * 
+ * @example
+ * ```tsx
+ * <UpdateAccessControlWrapper resource="posts">
+ *   <EditPostButton />
+ * </UpdateAccessControlWrapper>
+ * ```
+ */
 export const UpdateAccessControlWrapper: React.FC<UpdateAccessControlWrapperProps> = ({
   children,
   resource,
@@ -15,7 +27,7 @@ export const UpdateAccessControlWrapper: React.FC<UpdateAccessControlWrapperProp
 }) => {
   const { isAllowed } = useAccessControl();
 
-  if (!isAllowed(Action.Update, resource)) {
+  if (!isAllowed('update', resource)) {
     return fallback;
   }
 

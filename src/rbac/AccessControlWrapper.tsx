@@ -1,18 +1,31 @@
 import React, { ReactElement } from 'react';
 import useAccessControl from './useAccessControl';
-import { Action, Resource } from './access-rules';
 
 export interface AccessControlWrapperProps {
   children: ReactElement;
-  resource: Resource;
-  action?: Action;
+  resource: string;
+  action?: string;
   fallback?: ReactElement | null;
 }
 
+/**
+ * Component to conditionally render children based on RBAC permissions
+ * 
+ * @param resource - The resource to check access for
+ * @param action - The action to check (default: 'read')
+ * @param fallback - Component to render if access is denied
+ * 
+ * @example
+ * ```tsx
+ * <AccessControlWrapper resource="posts" action="create">
+ *   <CreatePostButton />
+ * </AccessControlWrapper>
+ * ```
+ */
 export const AccessControlWrapper: React.FC<AccessControlWrapperProps> = ({
   children,
   resource,
-  action = Action.Read,
+  action = 'read',
   fallback = null,
 }) => {
   const { isAllowed } = useAccessControl();
@@ -25,16 +38,30 @@ export const AccessControlWrapper: React.FC<AccessControlWrapperProps> = ({
 };
 
 export interface WithAccessControlProps {
-  accessedResource: Resource;
-  accessAction?: Action;
+  accessedResource: string;
+  accessAction?: string;
 }
 
+/**
+ * HOC to wrap components with access control
+ * 
+ * @example
+ * ```tsx
+ * const ProtectedComponent = withAccessControl(MyComponent);
+ * 
+ * <ProtectedComponent 
+ *   accessedResource="posts" 
+ *   accessAction="create"
+ *   // ... other props
+ * />
+ * ```
+ */
 export const withAccessControl = <P extends object>(
   WrappedComponent: React.ComponentType<P>
 ) => {
   return React.forwardRef<any, P & WithAccessControlProps>((props, ref) => {
     const { isAllowed } = useAccessControl();
-    const { accessedResource, accessAction = Action.Read, ...rest } = props;
+    const { accessedResource, accessAction = 'read', ...rest } = props;
 
     if (!isAllowed(accessAction, accessedResource)) {
       return null;

@@ -2,7 +2,7 @@ import React from "react"
 import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react"
 
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip"
-import { Action, useAccessControl } from "../../rbac"
+import { CommonActions, useAccessControl } from "../../rbac"
 
 export enum ActionType {
   Edit = 1,
@@ -36,8 +36,8 @@ export function TableActions({
   }
   const { isAllowed, getResourceByUrl } = useAccessControl()
 
-  const AllowedDelete = link ? isAllowed(Action.Delete, getResourceByUrl(link)) : true
-  const AllowedEdit = link ? isAllowed(Action.Update, getResourceByUrl(link)) : true
+  const AllowedDelete = link ? isAllowed(CommonActions.Delete, getResourceByUrl(link)) : true
+  const AllowedEdit = link ? isAllowed(CommonActions.Update, getResourceByUrl(link)) : true
 
   return (
     <div className="flex items-center justify-center space-x-3.5 text-center">

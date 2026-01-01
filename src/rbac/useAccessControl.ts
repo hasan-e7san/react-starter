@@ -1,38 +1,54 @@
 import { useAuth } from '../providers/AuthProvider';
-import { Action, Resource, Role, userCan } from './access-rules';
+import { userCan } from './access-rules';
+import { useRBAC } from './RBACProvider';
 
 export interface UseAccessControlReturn {
-  isAllowed: (action: Action, target: Resource) => boolean;
-  getResourceByUrl: (url: string) => Resource;
+  isAllowed: (action: string, target: string) => boolean;
+  getResourceByUrl: (url: string) => string;
 }
 
+/**
+ * Hook to check access control permissions
+ * 
+ * @returns Object with isAllowed and getResourceByUrl functions
+ * 
+ * @example
+ * ```tsx
+ * const { isAllowed } = useAccessControl();
+ * 
+ * if (isAllowed('create', 'posts')) {
+ *   // User can create posts
+ * }
+ * ```
+ */
 export const useAccessControl = (): UseAccessControlReturn => {
   const { user } = useAuth();
+  const { rules, resources, defaultResource } = useRBAC();
 
-  const isAllowed = (action: Action, target: Resource): boolean => {
-    if (target === Resource.Auth) {
+  const isAllowed = (action: string, target: string): boolean => {
+    // Allow access to auth resource by default (if configured)
+    if (defaultResource && target === defaultResource) {
       return true;
     }
     
-    if (!user) {
+    if (!user || !user.role) {
       return false;
     }
 
-    const userRoles = user.role as Role;
+    // Support both single role (string) and multiple roles (array)
+    const userRoles = Array.isArray(user.role) ? user.role : [user.role];
 
-    return userCan([userRoles], action, target);
+    return userCan(userRoles, action, target, rules, defaultResource);
   };
 
-  const getResourceByUrl = (url: string): Resource => {
-    const resources = Object.entries(Resource);
-
-    for (const [, value] of resources) {
-      if (url.startsWith("/" + value)) {
-        return value as Resource;
+  const getResourceByUrl = (url: string): string => {
+    for (const resource of resources) {
+      if (url.startsWith("/" + resource)) {
+        return resource;
       }
     }
 
-    return Resource.Undefined;
+    return defaultResource || '';
   };
 
   return { isAllowed, getResourceByUrl };
