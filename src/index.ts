@@ -83,9 +83,39 @@ export {
   debounce,
   throttle,
   handleEditCache,
-  handleSingleEditCache
+  handleSingleEditCache,
+  // API utilities
+  createAxiosInstance,
+  createAuthAxiosInstance,
+  onDelete,
+  useRefreshToken,
+  useAxiosAuth,
+  useAxiosHeadersUrl,
+  useFetchSingleAxios,
+  useGet,
+  useGetSingle,
+  useUploadFile,
+  useSendEmail,
 } from './lib';
-export type { CacheEditOptions } from './lib';
+export type { 
+  CacheEditOptions,
+  // API types
+  AxiosConfig,
+  DeleteOptions,
+  RefreshTokenResponse,
+  UseRefreshTokenOptions,
+  UseAxiosAuthOptions,
+  AxiosHeadersConfig,
+  UseFetchSingleAxiosOptions,
+  UseFetchSingleAxiosReturn,
+  UseGetOptions,
+  FileUploadResponse,
+  FileUploadParams,
+  UseUploadFileOptions,
+  SendEmailResponse,
+  SendEmailParams,
+  UseSendEmailOptions,
+} from './lib';
 
 // Export RBAC
 export {
