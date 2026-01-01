@@ -27,7 +27,7 @@ export * from './label';
 export * from './menubar';
 export * from './modal';
 export * from './navigation-menu';
-export * from './pagination';
+// export * from './pagination';  // Excluded - using custom DataPagination
 export * from './popover';
 export * from './progress';
 export * from './protected-components';
@@ -42,7 +42,7 @@ export * from './skeleton';
 export * from './slider';
 export * from './sonner';
 export * from './switch';
-export * from './table';
+// export * from './table';  // Excluded - using custom Table/DataTable
 export * from './tabs';
 export * from './textarea';
 export * from './toast';

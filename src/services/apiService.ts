@@ -1,4 +1,6 @@
+
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { useAuth } from '../providers/AuthProvider';
 
 export interface ApiService {
   get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
@@ -7,12 +9,12 @@ export interface ApiService {
   patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
   delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
   setBaseURL(baseURL: string): void;
-  setAuthToken(token: string): void;
-  removeAuthToken(): void;
 }
+
 
 class ApiServiceImpl implements ApiService {
   private axiosInstance: AxiosInstance;
+  private getToken: (() => string | undefined) | null = null;
 
   constructor(baseURL?: string) {
     this.axiosInstance = axios.create({
@@ -26,7 +28,13 @@ class ApiServiceImpl implements ApiService {
     // Request interceptor
     this.axiosInstance.interceptors.request.use(
       (config) => {
-        // You can modify request config here (e.g., add auth token)
+        if (this.getToken) {
+          const token = this.getToken();
+          if (token) {
+            config.headers = config.headers || {};
+            config.headers['Authorization'] = `Bearer ${token}`;
+          }
+        }
         return config;
       },
       (error) => {
@@ -54,6 +62,10 @@ class ApiServiceImpl implements ApiService {
         return Promise.reject(error);
       }
     );
+  }
+
+  setTokenGetter(getter: () => string | undefined) {
+    this.getToken = getter;
   }
 
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
@@ -84,15 +96,15 @@ class ApiServiceImpl implements ApiService {
   setBaseURL(baseURL: string): void {
     this.axiosInstance.defaults.baseURL = baseURL;
   }
-
-  setAuthToken(token: string): void {
-    this.axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  }
-
-  removeAuthToken(): void {
-    delete this.axiosInstance.defaults.headers.common['Authorization'];
-  }
 }
+
 
 // Export singleton instance
 export const apiService = new ApiServiceImpl();
+
+// React hook to connect apiService to AuthProvider
+export function useApiService() {
+  const { tokens } = useAuth();
+  apiService.setTokenGetter(() => tokens?.access_token);
+  return apiService;
+}

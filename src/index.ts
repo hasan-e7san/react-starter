@@ -1,12 +1,69 @@
 // Import global styles
 import './index.css';
 
-// Export all UI components
+// Export all UI components (excludes table/pagination - using custom versions)
 export * from './components/ui';
 
 // Export other components
 export { Button } from './components/Button';
 export { Card } from './components/Card';
+
+// Component categories
+export * from './components/charts';
+export * from './components/table';
+export * from './components/tabs';
+export * from './components/overlay';
+export * from './components/layout';
+export * from './components/modals';
+export * from './components/date-picker';
+export * from './components/search';
+export * from './components/common';
+
+// Navigation components (explicit exports to avoid Sidebar conflict)
+export {
+  UserNav,
+  DashboardNav,
+  Sidebar as AppSidebar,
+  MobileSidebar
+} from './components/navigation';
+export type {
+  UserNavProps,
+  DashboardNavProps,
+  SidebarProps as AppSidebarProps,
+  TMobileSidebarProps as MobileSidebarProps
+} from './components/navigation';
+
+// Form components (explicit exports to avoid conflicts with ui components)
+export {
+  FileUploadButton,
+  DatePicker,
+  TimeInput,
+  TextInput,
+  CheckboxGroup,
+  RadioGroup,
+  FormInput,
+  Select as FormSelect,
+  ComboboxSelect,
+  FormButtons,
+  FormLayout
+} from './components/form';
+export type {
+  FileUploadButtonProps,
+  DatePickerProps,
+  TimeInputProps,
+  TextInputProps,
+  CheckboxGroupProps,
+  CheckboxItem,
+  RadioGroupProps,
+  RadioItem,
+  FormInputProps,
+  SelectProps as FormSelectProps,
+  SelectOption,
+  ComboboxSelectProps,
+  ComboboxOption,
+  FormButtonsProps,
+  FormLayoutProps
+} from './components/form';
 
 // Export contexts
 export { LayoutProvider, useLayout } from './contexts/LayoutContext';
@@ -86,6 +143,9 @@ export type { RequiredAuthProps, Router } from './routes';
 // Export services
 export { apiService } from './services/apiService';
 export type { ApiService } from './services/apiService';
+
+// Export constants
+export { pageTitles } from './constants/urls';
 
 // Export types
 export type { ButtonProps } from './components/Button';
