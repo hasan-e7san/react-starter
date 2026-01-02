@@ -2,6 +2,10 @@
 
 A modern React component library built with Vite, TypeScript, and best practices.
 
+## Changelog
+
+- 2026-01-02: `BrowserRouter` removed from inside `AppProvider`. Consumers must wrap `AppProvider` (and any `react-router-dom` usage) in their own router at the app root.
+
 ## Features
 
 - 🎨 **UI Components**: Pre-built, customizable components (Button, Card, etc.)
@@ -54,23 +58,28 @@ The library includes Tailwind CSS with pre-configured theme variables for:
 
 ### App Provider (All-in-one)
 
-Wrap your application with `AppProvider` to get all providers in one go:
+Wrap your application with `BrowserRouter` at the root. `AppProvider` no longer creates a router internally so you control the router setup in your app entry point:
 
 ```tsx
+import { BrowserRouter } from 'react-router-dom';
 import { AppProvider } from 'izen-react-starter';
 import { AppRouter } from './routes';
 
 function App() {
   return (
-    <AppProvider 
-      defaultTheme="light"
-      showReactQueryDevtools={true}
-    >
-      <AppRouter />
-    </AppProvider>
+    <BrowserRouter>
+      <AppProvider 
+        defaultTheme="light"
+        showReactQueryDevtools={true}
+      >
+        <AppRouter />
+      </AppProvider>
+    </BrowserRouter>
   );
 }
 ```
+
+> Recent change: `BrowserRouter` was removed from inside `AppProvider`. Always wrap `AppProvider` (or any components using `react-router-dom` hooks/components) in your own router at the application root.
 
 ### Authentication
 
@@ -106,6 +115,23 @@ function ProfilePage() {
 }
 ```
 
+#### Typing `useAuth`
+
+`useAuth` is generic. Bring your own user shape for full IntelliSense:
+
+```tsx
+import { useAuth } from 'izen-react-starter';
+
+type MyUser = {
+  id: string;
+  name: string;
+  role: 'admin' | 'user';
+};
+
+const { user, setAuthData } = useAuth<MyUser>();
+setAuthData({ id: '1', name: 'Ada', role: 'admin' }, { access_token: 'jwt' });
+```
+
 ### Protected Routes
 
 ```tsx
@@ -126,6 +152,8 @@ function AppRouter() {
   );
 }
 ```
+
+> Make sure these routes are rendered inside your app-level router (e.g., `BrowserRouter`) that wraps `AppProvider`, so `RequiredAuth` and router hooks have a valid router context.
 
 ### App Router Hook (Simplified Routing)
 
