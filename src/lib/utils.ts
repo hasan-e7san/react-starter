@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { format } from 'date-fns';
+import { ChangeEvent } from 'react';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -67,6 +68,45 @@ export const dateFromat = (date: string | Date): string => {
   }
   return format(date, "LLL dd, y HH:mm");
 }
+
+/**
+ * Create a synthetic change event for form inputs
+ * Useful for programmatic form updates when working with custom components
+ * 
+ * @param name - Input name attribute
+ * @param value - Input value
+ * @returns Synthetic React ChangeEvent
+ * 
+ * @example
+ * ```tsx
+ * const handleSelect = (selectedValue: string) => {
+ *   const syntheticEvent = createChangeEvent<HTMLSelectElement>('category', selectedValue);
+ *   onChange(syntheticEvent);
+ * };
+ * ```
+ */
+export const createChangeEvent = <T extends HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+  name: string,
+  value: string
+): ChangeEvent<T> => {
+  return {
+    target: { name, value } as T,
+    currentTarget: { name, value } as T,
+    bubbles: true,
+    cancelable: true,
+    defaultPrevented: false,
+    eventPhase: 0,
+    isTrusted: true,
+    nativeEvent: {} as Event,
+    preventDefault: () => {},
+    stopPropagation: () => {},
+    isPropagationStopped: () => false,
+    isDefaultPrevented: () => false,
+    timeStamp: Date.now(),
+    type: 'change',
+    persist: () => {},
+  } as ChangeEvent<T>;
+};
 
 export function appendFormData(data: Record<string, any>): FormData {
   const formData = new FormData();
