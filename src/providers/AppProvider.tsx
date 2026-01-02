@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Suspense, ReactNode } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
+import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from './ThemeProvider';
 import { AuthProvider } from './AuthProvider';
 import { OverlayProvider } from './OverlayProvider';
@@ -51,18 +52,20 @@ export function AppProvider({
     <AuthProvider>
       <Suspense>
         <HelmetProvider>
-          <ErrorBoundary FallbackComponent={ErrorFallback}>
-            <QueryClientProvider client={queryClient}>
-              {showReactQueryDevtools && <ReactQueryDevtools />}
-              <OverlayProvider>
-                <ThemeProvider defaultTheme={defaultTheme} storageKey={storageKey}>
-                  <ModalProvider>
-                    {children}
-                  </ModalProvider>
-                </ThemeProvider>
-              </OverlayProvider>
-            </QueryClientProvider>
-          </ErrorBoundary>
+          <BrowserRouter>
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+              <QueryClientProvider client={queryClient}>
+                {showReactQueryDevtools && <ReactQueryDevtools />}
+                <OverlayProvider>
+                  <ThemeProvider defaultTheme={defaultTheme} storageKey={storageKey}>
+                    <ModalProvider>
+                      {children}
+                    </ModalProvider>
+                  </ThemeProvider>
+                </OverlayProvider>
+              </QueryClientProvider>
+            </ErrorBoundary>
+          </BrowserRouter>
         </HelmetProvider>
       </Suspense>
     </AuthProvider>
