@@ -127,6 +127,50 @@ function AppRouter() {
 }
 ```
 
+### App Router Hook (Simplified Routing)
+
+The `useAppRouter` hook simplifies route configuration by automatically handling:
+- Dashboard layout wrapping
+- Authentication protection
+- Route structure management
+
+```tsx
+import { useAppRouter } from 'izen-react-starter';
+import { Suspense } from 'react';
+import DashboardLayout from '@/components/layout/dashboard-layout';
+
+// Define your dashboard child routes
+const dashboardChildren = [
+  { path: 'users', element: <UsersPage /> },
+  { path: 'clients', element: <ClientsPage /> },
+  { path: 'preferences', element: <PreferencesPage /> },
+];
+
+// Define your public routes
+const publicRoutes = [
+  { path: '/', element: <HomePage />, index: true },
+  { path: '/login', element: <LoginPage /> },
+  { path: '/404', element: <NotFoundPage /> }
+];
+
+export default function AppRouter() {
+  const routes = useAppRouter({
+    DashboardLayout,
+    dashboardChildren,
+    publicRoutes,
+    includeDefaultNotFound: true // adds default 404 if not provided
+  });
+
+  return routes;
+}
+```
+
+The hook automatically:
+- Wraps dashboard routes with `RequiredAuth` 
+- Applies `DashboardLayout` wrapper
+- Merges with public routes
+- Handles 404 fallback
+
 ### Router Hooks
 
 ```tsx
