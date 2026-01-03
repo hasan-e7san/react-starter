@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AxiosInstance, AxiosRequestConfig } from "axios";
+import { AxiosRequestConfig } from "axios";
 import { ErrorBoundary } from "react-error-boundary";
 import { DefaultValues, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -10,7 +10,6 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Card } from "../ui/card";
 import { useToast } from "../ui/use-toast";
 import useAxiosHeadersUrl from "../../lib/api/axios/hooks/useAxiosHeadersUrl";
-import { createAuthAxiosInstance } from "../../lib/api/axios";
 import useAxiosAuth from "../../lib/api/axios/hooks/useAxiosAuth";
 import { dateFromat, formatErrorToList } from "../../lib/utils";
 import { FormContext, FormContextType } from "../../providers/FormContext";
@@ -36,7 +35,6 @@ export interface FormLayoutProps<TFieldValues extends Record<string, any> = Reco
   dataFormatter?: Partial<Record<keyof TFieldValues | string, (data: any) => unknown>>;
   baseURL?: string;
   multipartUrls?: string[];
-  axiosInstance?: AxiosInstance;
 }
 
 function createDynamicSchema(obj: Record<string, unknown>): z.ZodObject<any> {
@@ -90,8 +88,7 @@ export default function FormLayout<TFieldValues extends Record<string, any> = Re
   dataFormatter,
   baseURL = "",
   multipartUrls = [],
-  axiosInstance,
-}: FormLayoutProps<TFieldValues>) {
+  }: FormLayoutProps<TFieldValues>) {
   const router = useRouter();
   const { toast } = useToast();
   const submitRef = useRef<HTMLFormElement | null>(null);

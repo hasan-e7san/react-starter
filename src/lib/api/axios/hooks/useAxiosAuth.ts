@@ -2,7 +2,7 @@ import { useAuth } from '../../../../providers/AuthProvider';
 import useRefreshToken, { RefreshTokenResponse } from '../useRefreshToken';
 import { useEffect, useState } from 'react';
 import { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { createAuthAxiosInstance, createAxiosInstance } from '../axios';
+import { createAuthAxiosInstance } from '../axios';
 import { useApiService } from '../../../../services/apiService';
 
 export interface UseAxiosAuthOptions {

@@ -6,7 +6,6 @@ import { DeleteIcon, FileIcon, ImageIcon, XIcon } from "lucide-react";
 import { Button } from "../../ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../ui/form";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../ui/tooltip";
-import { createAuthAxiosInstance } from "../../../lib/api/axios";
 import useAxiosAuth from "../../../lib/api/axios/hooks/useAxiosAuth";
 import { FormContext } from "../../../providers/FormContext";
 
@@ -40,14 +39,10 @@ export default function FileUpload({
   accept = defaultAccept,
   headers,
   baseURL = "",
-  axiosInstance,
   mapResponseToAttachment,
 }: FileUploadProps) {
   const form = useContext(FormContext);
-  const axiosAuth = useAxiosAuth({
-    axiosInstance: axiosInstance ?? createAuthAxiosInstance({ baseURL }),
-    customHeaders: headers,
-  });
+  const axiosAuth = useAxiosAuth();
 
   const value = form?.watch(name);
 
