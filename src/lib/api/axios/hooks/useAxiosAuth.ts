@@ -2,6 +2,8 @@ import { useAuth } from '../../../../providers/AuthProvider';
 import useRefreshToken, { RefreshTokenResponse } from '../useRefreshToken';
 import { useEffect, useState } from 'react';
 import { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { createAuthAxiosInstance, createAxiosInstance } from '../axios';
+import { useApiService } from '../../../../services/apiService';
 
 export interface UseAxiosAuthOptions {
   /**
@@ -60,18 +62,14 @@ export interface UseAxiosAuthOptions {
  * }
  * ```
  */
-const useAxiosAuth = (options: UseAxiosAuthOptions): AxiosInstance => {
-  const {
-    axiosInstance,
-    refreshUrl = '/auth/refresh',
-    customHeaders = {},
-    onRefreshFail,
-    onRefreshSuccess,
-  } = options;
-
+const useAxiosAuth = (): AxiosInstance => {
+    const apiService = useApiService();
+    if(!apiService.getBaseUrl()){
+      throw new Error("API base URL is not set in apiService. Please set it before using useAxiosAuth.");
+    }
+  const axiosInstance = createAuthAxiosInstance({ baseURL: apiService.getBaseUrl() as string });
   const refresh = useRefreshToken({
-    refreshUrl,
-    onSuccess: onRefreshSuccess,
+    refreshUrl: apiService.getRefreshTokenUrl(),
   });
 
   const [sent, setSent] = useState<boolean>(false);
@@ -85,10 +83,6 @@ const useAxiosAuth = (options: UseAxiosAuthOptions): AxiosInstance => {
           config.headers['Authorization'] = `Bearer ${tokens?.access_token}`;
         }
 
-        // Add custom headers
-        Object.entries(customHeaders).forEach(([key, value]) => {
-          config.headers[key] = value;
-        });
 
         return config;
       },
@@ -111,26 +105,17 @@ const useAxiosAuth = (options: UseAxiosAuthOptions): AxiosInstance => {
             // Token refresh failed
             setAuthData(undefined, undefined);
             
-            if (onRefreshFail) {
-              onRefreshFail();
-            } else {
-              // Default behavior: redirect to login
-              if (typeof window !== 'undefined') {
+            if (typeof window !== 'undefined') {
                 window.location.href = '/login';
               }
-            }
+            
             return Promise.reject(err);
           }
 
           // Retry the original request with new token
           if (prevRequest) {
             prevRequest.headers['Authorization'] = `Bearer ${newToken.access_token}`;
-            
-            // Re-add custom headers
-            Object.entries(customHeaders).forEach(([key, value]) => {
-              prevRequest.headers[key] = value;
-            });
-
+           
             return axiosInstance(prevRequest);
           }
         }
@@ -145,7 +130,7 @@ const useAxiosAuth = (options: UseAxiosAuthOptions): AxiosInstance => {
       axiosInstance.interceptors.request.eject(requestIntercept);
       setSent(false);
     };
-  }, [tokens, refresh, customHeaders, sent]);
+  }, [tokens, refresh, sent]);
 
   return axiosInstance;
 };

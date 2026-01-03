@@ -9,12 +9,16 @@ export interface ApiService {
   patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
   delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
   setBaseURL(baseURL: string): void;
+  getBaseUrl(): string | undefined;
+  setRefreshTokenUrl(url: string): void;
+  getRefreshTokenUrl(): string | undefined;
 }
 
 
 class ApiServiceImpl implements ApiService {
   private axiosInstance: AxiosInstance;
   private getToken: (() => string | undefined) | null = null;
+  private refreshTokenUrl?: string;
 
   constructor(baseURL?: string) {
     this.axiosInstance = axios.create({
@@ -95,6 +99,18 @@ class ApiServiceImpl implements ApiService {
 
   setBaseURL(baseURL: string): void {
     this.axiosInstance.defaults.baseURL = baseURL;
+  }
+
+  getBaseUrl(): string | undefined {
+    return this.axiosInstance.defaults.baseURL;
+  }
+
+  setRefreshTokenUrl(url: string): void {
+    this.refreshTokenUrl = url;
+  }
+
+  getRefreshTokenUrl(): string | undefined {
+    return this.refreshTokenUrl;
   }
 }
 

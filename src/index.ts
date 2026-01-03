@@ -109,7 +109,6 @@ export type {
   AxiosHeadersConfig,
   UseFetchSingleAxiosOptions,
   UseFetchSingleAxiosReturn,
-  UseGetOptions,
   FileUploadResponse,
   FileUploadParams,
   UseUploadFileOptions,

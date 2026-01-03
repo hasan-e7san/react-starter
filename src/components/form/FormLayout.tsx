@@ -99,10 +99,7 @@ export default function FormLayout<TFieldValues extends Record<string, any> = Re
   const [itemState, setItemState] = useState(item);
   const [isCreate, setIsCreate] = useState(!item?.id);
 
-  const axiosAuth = useAxiosAuth({
-    axiosInstance: axiosInstance ?? createAuthAxiosInstance({ baseURL }),
-    customHeaders: requestHeaders,
-  });
+  const axiosAuth = useAxiosAuth();
   const [apiUrl, headers] = useAxiosHeadersUrl(url, {
     baseURL,
     customHeaders: requestHeaders ?? {},

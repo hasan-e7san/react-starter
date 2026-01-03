@@ -681,6 +681,88 @@ export function UsersPage() {
 ```
 > **Tip:** You only need to set the baseURL once per app session. After that, all requests will use this base URL automatically. The token will always be injected from AuthProvider for every request.
 
+#### Refresh token endpoint (optional)
+
+If your backend uses a refresh endpoint, set it alongside the base URL so auth-aware hooks can reuse it:
+
+```tsx
+import { useEffect } from 'react';
+import { useApiService } from 'izen-react-starter';
+
+function App() {
+  const apiService = useApiService();
+
+  useEffect(() => {
+    apiService.setBaseURL('https://api.example.com');
+    apiService.setRefreshTokenUrl('/auth/refresh');
+  }, [apiService]);
+
+  return <YourApp />;
+}
+```
+
+### Auth Axios hook (useAxiosAuth)
+
+`useAxiosAuth` returns an axios instance with auth interceptors and automatic token refresh. It uses the `baseURL` and optional refresh URL you set on `apiService`.
+
+```tsx
+import { useEffect } from 'react';
+import { useApiService } from 'izen-react-starter';
+import { useAxiosAuth } from 'izen-react-starter';
+
+function Profile() {
+  const apiService = useApiService();
+
+  // Ensure base URL (and refresh URL if needed) are set once
+  useEffect(() => {
+    apiService.setBaseURL('https://api.example.com');
+    apiService.setRefreshTokenUrl('/auth/refresh');
+  }, [apiService]);
+
+  const axiosAuth = useAxiosAuth();
+
+  const loadProfile = async () => {
+    const res = await axiosAuth.get('/me');
+    return res.data;
+  };
+
+  // ...use loadProfile inside effects or react-query
+  return null;
+}
+```
+
+### Generic queries (useGet / useGetSingle)
+
+React Query wrappers that reuse the auth axios instance. Make sure `apiService` has a base URL set before calling them.
+
+```tsx
+import { useEffect } from 'react';
+import { useApiService, useGet, useGetSingle } from 'izen-react-starter';
+
+function UsersScreen() {
+  const apiService = useApiService();
+
+  useEffect(() => {
+    apiService.setBaseURL('https://api.example.com');
+  }, [apiService]);
+
+  const usersQuery = useGet<{ id: string; name: string }>('/users');
+  const userQuery = useGetSingle<{ id: string; name: string }>(`/users/${usersQuery.data?.[0]?.id}`, undefined, undefined, '/users/1');
+
+  if (usersQuery.isLoading) return <div>Loading users...</div>;
+  if (usersQuery.error) return <div>Error: {String(usersQuery.error)}</div>;
+
+  return (
+    <div>
+      {usersQuery.data?.map((u) => (
+        <div key={u.id}>{u.name}</div>
+      ))}
+      <div>User detail: {userQuery.data?.name}</div>
+    </div>
+  );
+}
+```
+
 ### Role-Based Access Control (RBAC)
 
 The RBAC system is now fully configurable! Define your own roles, resources, and rules.
