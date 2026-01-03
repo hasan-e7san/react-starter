@@ -1,6 +1,6 @@
 {
   "name": "izen-react-starter",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "A React component library with UI components, layout context, and data fetching",
   "type": "module",
   "main": "./dist/react-starter.umd.cjs",
