@@ -1,65 +1,67 @@
-import * as React from 'react';
-import { useRef } from 'react';
-import { Button, ButtonProps } from '../ui/button';
+import * as React from "react";
+import { useRef } from "react";
 
-export interface FileUploadButtonProps extends Omit<ButtonProps, 'onChange'> {
+import { Button, ButtonProps } from "../ui/button";
+import { useToast } from "../ui/use-toast";
+
+export interface FileUploadButtonProps extends Omit<ButtonProps, "onChange"> {
   onFileSelect?: (file: File) => void;
   accept?: string;
-  maxSize?: number; // in bytes
   validationRules?: {
-    maxSize?: number;
+    maxSize?: number; // in bytes
     acceptedTypes?: string[];
     customValidation?: (file: File) => boolean | string;
   };
-  showPreview?: boolean;
-  previewClassName?: string;
   children?: React.ReactNode;
-  onValidationError?: (message: string) => void;
-  onSuccess?: (message: string) => void;
 }
 
-export const FileUploadButton = React.forwardRef<HTMLButtonElement, FileUploadButtonProps>(
-  ({
-    onFileSelect,
-    accept = '*/*',
-    validationRules = {
-      maxSize: 5 * 1024 * 1024, // 5MB default
-      acceptedTypes: undefined,
+const FileUploadButton = React.forwardRef<HTMLButtonElement, FileUploadButtonProps>(
+  (
+    {
+      onFileSelect,
+      accept = "*/*",
+      validationRules = {
+        maxSize: 5 * 1024 * 1024, // 5MB default
+        acceptedTypes: undefined,
+      },
+      children,
+      ...buttonProps
     },
-    children,
-    onValidationError,
-    onSuccess,
-    ...buttonProps
-  }, ref) => {
+    ref
+  ) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
 
     const validateFile = (file: File): boolean => {
-      // Size validation
       if (validationRules.maxSize && file.size > validationRules.maxSize) {
         const sizeMB = validationRules.maxSize / (1024 * 1024);
-        const message = `File size should be less than ${sizeMB}MB`;
-        onValidationError?.(message);
+        toast({
+          title: "File too large",
+          description: `File size should be less than ${sizeMB}MB`,
+          variant: "destructive",
+        });
         return false;
       }
-      
-      // Type validation
+
       if (validationRules.acceptedTypes && validationRules.acceptedTypes.length > 0) {
         if (!validationRules.acceptedTypes.includes(file.type)) {
-          const message = `Please select a valid file type: ${validationRules.acceptedTypes.join(', ')}`;
-          onValidationError?.(message);
+          toast({
+            title: "Invalid file type",
+            description: `Please select: ${validationRules.acceptedTypes.join(", ")}`,
+            variant: "destructive",
+          });
           return false;
         }
       }
 
-      // Custom validation
       if (validationRules.customValidation) {
         const customValidationResult = validationRules.customValidation(file);
-        if (typeof customValidationResult === 'string') {
-          onValidationError?.(customValidationResult);
+        if (typeof customValidationResult === "string") {
+          toast({ title: "File validation failed", description: customValidationResult, variant: "destructive" });
           return false;
         }
         if (!customValidationResult) {
-          onValidationError?.('File validation failed');
+          toast({ title: "File validation failed", variant: "destructive" });
           return false;
         }
       }
@@ -73,11 +75,10 @@ export const FileUploadButton = React.forwardRef<HTMLButtonElement, FileUploadBu
 
       if (validateFile(file)) {
         onFileSelect?.(file);
-        onSuccess?.('File selected successfully');
+        toast({ title: "File selected", description: file.name });
       }
 
-      // Reset the input
-      event.target.value = '';
+      event.target.value = "";
     };
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -103,4 +104,6 @@ export const FileUploadButton = React.forwardRef<HTMLButtonElement, FileUploadBu
   }
 );
 
-FileUploadButton.displayName = 'FileUploadButton';
+FileUploadButton.displayName = "FileUploadButton";
+
+export { FileUploadButton };

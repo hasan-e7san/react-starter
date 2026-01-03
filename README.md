@@ -257,6 +257,38 @@ function ThemeToggle() {
 }
 ```
 
+### Form Layout (RHF + Axios)
+
+Use `FormLayout` to wire react-hook-form + zod validation with built-in Axios auth, RBAC visibility checks, toasts, and submit helpers.
+
+```tsx
+import { FormLayout, CustomInput, DatePicker } from 'izen-react-starter';
+import { z } from 'zod';
+
+const schema = z.object({
+  name: z.string().min(1, 'Required'),
+  start: z.string().optional(),
+});
+
+function ExampleForm() {
+  return (
+    <FormLayout
+      url="/users"
+      baseURL="https://api.example.com"
+      validationSchema={schema}
+      onSave={(res, mode) => console.log('saved', mode, res)}
+      onError={(err) => console.error('submit error', err)}
+      showCancelBtn
+    >
+      <CustomInput name="name" title="Name" placeholder="Enter name" />
+      <DatePicker name="start" title="Start" placeholder="Pick a date" />
+    </FormLayout>
+  );
+}
+```
+
+Key props: `baseURL`, `multipartUrls`, `dataFormatter`, `onSave(data, mode)`, and `onError(error)` to handle API failures or ErrorBoundary catches.
+
 ### Modal and Overlay
 
 ```tsx

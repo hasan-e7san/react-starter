@@ -12,3 +12,6 @@ export type { ThemeProviderProps, ThemeProviderState, Theme } from './ThemeProvi
 
 export { AppProvider, queryClient } from './AppProvider';
 export type { AppProviderProps } from './AppProvider';
+
+export { FormProvider, useFormContext, FormContext } from './FormContext';
+export type { FormContextType, FormProviderProps } from './FormContext';
