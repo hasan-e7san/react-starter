@@ -1,4 +1,4 @@
-import { RouteObject, useRoutes, Outlet } from 'react-router-dom';
+import { RouteObject, useRoutes, Outlet, useInRouterContext } from 'react-router-dom';
 import { RequiredAuth } from './RequiredAuth';
 
 export interface AppRouterConfig {
@@ -65,27 +65,36 @@ export function useAppRouter(config: AppRouterConfig) {
     publicRoutes = [],
     includeDefaultNotFound = true
   } = config;
+if (!useInRouterContext()) {
+    throw new Error(
+      'useAppRouter must be used inside a Router (BrowserRouter, MemoryRouter, etc.)'
+    );
+  }
 
+  // dashboardChildren should be like:
+// [
+//   { path: 'users', element: <UsersPage /> },
+//   { path: 'clients', element: <ClientsPage /> }
+// ]
   // Build dashboard routes with RequiredAuth and DashboardLayout
-  const dashboardRoutes: RouteObject[] = [
-    {
-      path: '/dashboard',
-      element: <RequiredAuth />,
-      children: [
-        {
-          path: '/dashboard',
-          element: DashboardLayout ? (
-            <DashboardLayout>
-              <Outlet />
-            </DashboardLayout>
-          ) : (
+ const dashboardRoutes: RouteObject[] = [
+  {
+    path: 'dashboard',
+    element: <RequiredAuth />,
+    children: [
+      {
+        element: DashboardLayout ? (
+          <DashboardLayout>
             <Outlet />
-          ),
-          children: dashboardChildren
-        }
-      ]
-    }
-  ];
+          </DashboardLayout>
+        ) : (
+          <Outlet />
+        ),
+        children: dashboardChildren
+      }
+    ]
+  }
+];
 
   // Add default 404 route if requested and not already present
   let finalPublicRoutes = [...publicRoutes];
@@ -106,6 +115,6 @@ export function useAppRouter(config: AppRouterConfig) {
     ];
   }
 
-  const routes = useRoutes([...publicRoutes, ...dashboardRoutes]);
+const routes = useRoutes([...finalPublicRoutes, ...dashboardRoutes]);
   return routes;
 }

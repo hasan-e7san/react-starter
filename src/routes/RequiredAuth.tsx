@@ -13,11 +13,14 @@ export const RequiredAuth = ({ redirectTo = '/login', canAccess }: RequiredAuthP
 
   const isAllowed = canAccess ? canAccess(auth) : Boolean(auth?.user);
   
-  return (
-    isAllowed
-      ? <Outlet />
-      : <Navigate to={redirectTo} state={{ from: location }} replace />
-  );
+  return isAllowed ? <Outlet /> : (
+  <Navigate
+    to={redirectTo}
+    replace
+    state={{ from: location.pathname }}
+  />
+);
+
 }
 
 export default RequiredAuth;
