@@ -763,6 +763,45 @@ function UsersScreen() {
 }
 ```
 
+### Utility helpers (payload, time, HTML)
+
+These utilities are exported from `izen-react-starter/lib`:
+
+- `formatPayloadForEndpoint` (alias: `formatAxiosData`) — normalize payloads per endpoint (e.g., multipart for file-heavy routes, boolean fixes, role permissions, employee shifts).
+- `buildMultipartFormData`, `buildRolePermissionsFormData`, `buildEmployeeShiftFormData` — helpers used by `formatPayloadForEndpoint` that you can also call directly.
+- `removeHtmlTags` — strip HTML tags from strings.
+- Time helpers: `parseTimeToMilliseconds`, `diffHoursFromTimestamps` (alias: `TimeDiffHours`), `subtractTimeStrings`, `sumTimeStrings`, `formatSecondsToHms` (aliases: `secondsToTime`, `formatTimeStr`).
+- Date helpers: `toUTCDateString`/`toUTCDateTimeString`, `getWeekRange` (alias: `getWeekBounds`).
+
+Example payload formatting:
+
+```ts
+import { formatPayloadForEndpoint } from 'izen-react-starter/lib';
+
+// Multipart for file upload endpoints
+const payload = { name: 'Test', image: myFile };
+const body = formatPayloadForEndpoint(payload, '/lessons');
+await axios.post('/lessons', body);
+
+// Role permissions (only true values become permissions[])
+const roleBody = formatPayloadForEndpoint({ name: 'admin', manage_users: true }, '/roles');
+await axios.post('/roles', roleBody);
+
+// Employee shifts schedule
+const shiftBody = formatPayloadForEndpoint({ employeeShifts: { mon: { start: '09:00', end: '17:00' } } }, '/employee-shifts/schedule-update');
+await axios.post('/employee-shifts/schedule-update', shiftBody);
+```
+
+Example time helpers:
+
+```ts
+import { parseTimeToMilliseconds, subtractTimeStrings, formatSecondsToHms } from 'izen-react-starter/lib';
+
+const ms = parseTimeToMilliseconds('09:30'); // 34200000
+const diff = subtractTimeStrings('10:30', '09:00'); // "01:30:00"
+const pretty = formatSecondsToHms(3661); // "01:01:01"
+```
+
 ### Role-Based Access Control (RBAC)
 
 The RBAC system is now fully configurable! Define your own roles, resources, and rules.

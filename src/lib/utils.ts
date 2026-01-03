@@ -19,6 +19,33 @@ export function convertToHourMinuteString(hours: number) {
   return `${wholeHours}:${minutes < 10 ? '0' + minutes : minutes}`;
 }
 
+/**
+ * Format payloads for specific endpoints (multipart, boolean fixes, etc.).
+ * This is the library-friendly replacement for the old formatAxiosData.
+ */
+export function formatPayloadForEndpoint(payload: any, endpoint: string) {
+  switch (endpoint) {
+    case '/users':
+      return { ...payload, isActive: String(payload?.isActive) === '1' };
+    case '/locations':
+    case '/employees':
+    case '/countries':
+    case '/lessons':
+    case '/testimonials':
+    case '/employee-shifts':
+      return buildMultipartFormData(payload);
+    case '/employee-shifts/schedule-update':
+      return buildEmployeeShiftFormData(payload);
+    case '/roles':
+      return buildRolePermissionsFormData(payload);
+    default:
+      return payload;
+  }
+}
+
+// Backward compatible alias
+export const formatAxiosData = formatPayloadForEndpoint;
+
 export function formatErrorToList(str: string[] | string) {
   if (typeof str === "string") {
     return (
@@ -67,6 +94,28 @@ export const dateFromat = (date: string | Date): string => {
     return "";
   }
   return format(date, "LLL dd, y HH:mm");
+}
+
+export function removeHtmlTags(input?: string) {
+  if (!input) return '';
+  return input.replace(/<\/?[^>]+(>|$)/g, '');
+}
+
+export function toUTCDateString(date: Date) {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function toUTCDateTimeString(date: Date) {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const hour = String(date.getUTCHours()).padStart(2, '0');
+  const minute = String(date.getUTCMinutes()).padStart(2, '0');
+  const second = String(date.getUTCSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 }
 
 /**
@@ -124,6 +173,36 @@ export function appendFormData(data: Record<string, any>): FormData {
   return formData;
 }
 
+// Alias with a clearer name for multipart construction
+export const buildMultipartFormData = appendFormData;
+
+export function buildRolePermissionsFormData(data: any) {
+  const formData = new FormData();
+  formData.append("name", data?.name ?? '');
+  for (const key in data) {
+    if (data[key] === true) {
+      formData.append("permissions[]", key);
+    }
+  }
+  return formData;
+}
+
+export function buildEmployeeShiftFormData(data: any) {
+  const formData = new FormData();
+  for (const key in data) {
+    if (key === 'employeeShifts' && typeof data['employeeShifts'] === "object") {
+      for (const day in data['employeeShifts']) {
+        if (data['employeeShifts'][day] !== false) {
+          formData.append(`${key}[]`, JSON.stringify(data['employeeShifts'][day]));
+        }
+      }
+    } else {
+      formData.append(key, data[key]);
+    }
+  }
+  return formData;
+}
+
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
@@ -157,3 +236,58 @@ export function throttle<T extends (...args: any[]) => any>(
     }
   };
 }
+
+export function parseTimeToMilliseconds(timeStr?: string) {
+  if (!timeStr) return 0;
+  const [hours = '0', minutes = '0'] = timeStr.split(':');
+  const h = parseInt(hours, 10) || 0;
+  const m = parseInt(minutes, 10) || 0;
+  return h * 60 * 60 * 1000 + m * 60 * 1000;
+}
+
+export function diffHoursFromTimestamps(endMs: number, startMs: number) {
+  const diffMs = endMs >= startMs ? endMs - startMs : (24 * 60 * 60 * 1000 - startMs) + endMs;
+  return (diffMs / (1000 * 60 * 60)).toFixed(2);
+}
+
+export function subtractTimeStrings(time1: string, time2: string) {
+  const diffSeconds = Math.floor(parseTimeToMilliseconds(time1) / 1000) - Math.floor(parseTimeToMilliseconds(time2) / 1000);
+  return formatSecondsToHms(diffSeconds);
+}
+
+export function sumTimeStrings(time1: string, time2: string) {
+  const sumSeconds = Math.floor(parseTimeToMilliseconds(time1) / 1000) + Math.floor(parseTimeToMilliseconds(time2) / 1000);
+  return formatSecondsToHms(sumSeconds);
+}
+
+export function formatSecondsToHms(totalSeconds: number) {
+  const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+  const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+  const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+export function getWeekRange(selectedDate: Date): { startDate: Date; endDate: Date } {
+  const day = selectedDate.getDay();
+  const diffToMonday = (day === 0 ? -6 : 1) - day;
+  const diffToSunday = day === 0 ? 0 : (6 - day) + 1;
+
+  const startDate = new Date(selectedDate);
+  startDate.setDate(selectedDate.getDate() + diffToMonday);
+  startDate.setHours(0, 0, 0, 0);
+
+  const endDate = new Date(selectedDate);
+  endDate.setDate(selectedDate.getDate() + diffToSunday);
+  endDate.setHours(23, 59, 59, 999);
+
+  return { startDate, endDate };
+}
+
+// Backward-compatible aliases
+export const getUTCDate = toUTCDateString;
+export const getUTCDateTime = toUTCDateTimeString;
+export const TimeDiffHours = diffHoursFromTimestamps;
+export const parseTime = parseTimeToMilliseconds;
+export const formatTimeStr = formatSecondsToHms;
+export const secondsToTime = formatSecondsToHms;
+export const getWeekBounds = getWeekRange;
